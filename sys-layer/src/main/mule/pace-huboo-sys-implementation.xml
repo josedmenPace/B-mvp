@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="89976793-2efe-4c6a-9651-6d1b1e29332f" />
+	<flow name="get\inventory" doc:id="4c43ef6c-65fc-4b87-868c-b608e84d3640" >
+		<http:request method="GET" doc:name="Retrieve data from huboo" doc:id="c929db74-40fb-4846-b72b-0425899df69c" config-ref="HTTP_Request_configuration" url="https://api.sandbox.huboo.io/v2/inventory">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Accept" : "application/json",
+	"authorization" : vars.authorization
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="5047df43-31c5-41e9-a833-9e9a1cdd7f9a" />
+	</flow>
+	<flow name="get\inventoryID" doc:id="b4ebf931-7f17-4451-80dd-9cf298f06d1e" >
+		<choice doc:name="Choice" doc:id="6d44f4a8-d374-4c81-babc-d175353d6ec5" >
+			<when expression="vars.id == null">
+				<http:request method="GET" doc:name="Retrieve data from huboo by sku" doc:id="75a85673-7683-498d-a944-33a3005c6ef9" config-ref="HTTP_Request_configuration" url="https://api.sandbox.huboo.io/v2/inventory">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"authorization" : vars.authorization,
+	"accept" : "application/json"
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"skus" : vars.sku
+}]]]></http:query-params>
+		</http:request>
+			</when>
+			<otherwise >
+				<http:request method="GET" doc:name="Retrieve data from huboo by id" doc:id="82ed4bd6-e0f2-4fcf-a9e9-d0927b3415d1" config-ref="HTTP_Request_configuration" url="https://api.sandbox.huboo.io/v2/inventory">
+					<http:headers ><![CDATA[#[output application/java
+---
+{
+	"authorization" : vars.authorization,
+	"accept" : "application/json"
+}]]]></http:headers>
+					<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"skus" : vars.id
+}]]]></http:query-params>
+				</http:request>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="5e938383-114e-4979-ba33-f7b34c4e9efd" />
+	</flow>
+</mule>

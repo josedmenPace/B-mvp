@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <http:listener-config name="pace-huboo-sysapi-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" readTimeout="30000000" connectionIdleTimeout="40000000"/>
+    </http:listener-config>
+    <apikit:config name="pace-huboo-sysapi-config" api="resource::2b29941a-dfff-4301-9b84-e0731c42d790:pace-huboo-sysapi:1.0.8:raml:zip:pace-huboo-sysapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="pace-huboo-sysapi-main">
+        <http:listener config-ref="pace-huboo-sysapi-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="pace-huboo-sysapi-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="pace-huboo-sysapi-console">
+        <http:listener config-ref="pace-huboo-sysapi-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="pace-huboo-sysapi-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\inventory:pace-huboo-sysapi-config">
+        <ee:transform doc:name="Extract Autorization">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  data: [
+    {
+      sku: 422094,
+      client_sku: "AB123456",
+      total_quantity: 48,
+      total_allocated_quantity: 4,
+      breakdown_by_country: [
+        {
+          country_code: "GB",
+          quantity: 36,
+          allocated_quantity: 3,
+          breakdown_by_city: [
+            {
+              city: "Bristol",
+              quantity: 36,
+              allocated_quantity: 3
+            }
+          ]
+        }, 
+        {
+          country_code: "NL",
+          quantity: 12,
+          allocated_quantity: 1,
+          breakdown_by_city: [
+            {
+              city: "Veldhoven",
+              quantity: 12,
+              allocated_quantity: 1
+            }
+          ]
+        }
+      ]
+    }, 
+    {
+      sku: 422095,
+      client_sku: "NO-INVENTORY-RECORDED-EXAMPLE",
+      total_quantity: null,
+      total_allocated_quantity: null,
+      breakdown_by_country: []
+    }, 
+    {
+      sku: 422096,
+      client_sku: "INVENTORY-RECORDED-BUT-IS-ZERO-EXAMPLE",
+      total_quantity: 0,
+      total_allocated_quantity: 1,
+      breakdown_by_country: [
+        {
+          country_code: "GB",
+          quantity: 0,
+          allocated_quantity: 1,
+          breakdown_by_city: [
+            {
+              city: "Bristol",
+              quantity: 0,
+              allocated_quantity: 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  links: {
+    previous: "https://huboo.api.uk/v2/{resource}?page=1",
+    next: "https://huboo.api.uk/v2/{resource}?page=3",
+    first: "https://huboo.api.uk/v2/{resource}?page=1",
+    last: "https://huboo.api.uk/v2/{resource}?page=4"
+  },
+  meta: {
+    path: "https://huboo.api.uk/v2/{resource}",
+    per_page: 50,
+    current_page: 2,
+    from: 51,
+    to: 100,
+    last_page: 4,
+    total: 177,
+    links: [
+      {
+        url: "https://huboo.api.uk/v2/{resource}?page=1",
+        label: 1,
+        active: false
+      }
+    ]
+  }
+}]]></ee:set-payload>
+            </ee:message>
+            <ee:variables>
+                <ee:set-variable variableName="authorization"><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.Authorization]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="get\ all products" doc:id="de2d8102-ca23-4526-8d1a-f16032331731" name="get\inventory" />
+        <logger level="INFO" doc:name="Logger" doc:id="344a36f1-7901-4c82-8510-f9497d06d7eb" />
+    </flow>
+    <flow name="get:\inventory\(id):pace-huboo-sysapi-config" doc:id="a6cd23fa-8d37-4eeb-96bc-443c614c7217">
+        <logger level="INFO" doc:name="Logger" doc:id="307e1bc7-9007-4cab-8610-32751f43ada9" />
+		<ee:transform doc:name="Create Variables" doc:id="c16d3bcf-0bec-4676-91f5-7c2af52b0687">
+            <ee:variables>
+                <ee:set-variable variableName="id"><![CDATA[attributes.uriParams.'id']]></ee:set-variable>
+                <ee:set-variable variableName="authorization"><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.Authorization]]></ee:set-variable>
+				<ee:set-variable variableName="order" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+				<ee:set-variable variableName="quantity_requested" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.headers.quantity]]></ee:set-variable>
+				<ee:set-variable variableName="sku" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.sku]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="get\inventory by ID implementation" doc:id="451d66fc-a270-4929-b5ff-9a107e0275fa" name="get\inventoryID" />
+        <ee:transform doc:name="Extract quantity variable">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+            <ee:variables>
+                <ee:set-variable variableName="quantity"><![CDATA[%dw 2.0
+output application/json
+---
+payload.data.total_quantity]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="Logger" doc:id="3f98541c-d66e-423a-822d-84bbb086c8a8" />
+        <flow-ref doc:name="Validate Stock" doc:id="72802939-9a47-4826-ab2c-ffcde203e281" name="stock_validationFlow" />
+    </flow>
+    <flow name="post:\order:application\json:pace-huboo-sysapi-config" doc:id="6736c194-5cfa-4d01-b5d5-74206e519c82">
+        <logger level="INFO" doc:name="Logger" doc:id="881cb105-fc6a-4c9a-ac41-81421e8a4e0a" />
+		<flow-ref doc:name="get inventory and validate stock" doc:id="27a35444-559b-42f3-adf4-862a91ec28e1" name="get:\inventory\(id):pace-huboo-sysapi-config"/>
+		<http:request method="POST" doc:name="Create order after stock validation" doc:id="bf7c3df8-f2f3-4dda-bc79-b06ace24a321" config-ref="HTTP_Request_configuration" url="http://localhost:8082/api/order">
+			<http:body ><![CDATA[#[vars.order]]]></http:body>
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Stock" : vars.Stock,
+	"authorization" : vars.authorization,
+	"accept" : "application/json"
+}]]]></http:headers>
+		</http:request>
+    </flow>
+</mule>

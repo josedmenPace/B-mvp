@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="stock_validationFlow" doc:id="fb4ce1bd-d344-426f-a798-b6d72f9a8c66" >
+		<logger level="INFO" doc:name="Logger" doc:id="a7362ac9-d4e0-4186-8ee2-92bb97aee6d4" />
+		<choice doc:name="If" doc:id="adf7952c-f3ec-46f4-bf3d-9e4d7330258f" >
+			<when expression="#[vars.quantity[0] as Number &gt;= vars.quantity_requested]">
+				<set-variable value="Item is in stock" doc:name="Item in Stock" doc:id="2042646c-a733-48f2-a99e-f66ad1871685" variableName="Stock"/>
+			</when>
+			<otherwise >
+				<set-variable value="Item not in stock" doc:name="Item not in stock" doc:id="f54cb4cc-ac3b-47a0-8ac9-870fa31a1273" variableName="Stock"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="51f01be7-dc44-49c5-b28b-f76717e9c734" />
+	</flow>
+</mule>
