@@ -1,0 +1,32 @@
+%dw 2.0
+
+type auto_a73f22e1_1fda_4dce_be4a_2eab6492d2c3_Input_Payload = {
+  order_item_currency: String, 
+  order_item_sale_value: Number, 
+  order_number: String, 
+  contact: {
+    phone: String, 
+    customer_name: String, 
+    email: String, 
+    _?: Any
+  }, 
+  shipping_details: {
+    channel: Null, 
+    shipping_address: {
+      area: String, 
+      country: String, 
+      town: String, 
+      street_number: String, 
+      postcode: String, 
+      street_type: String, 
+      street_name: String, 
+      _?: Any
+    }, 
+    customer_note: String, 
+    _?: Any
+  }, 
+  order_item_reference_number: Number, 
+  order_item_quantity: Number, 
+  _?: Any
+}
+

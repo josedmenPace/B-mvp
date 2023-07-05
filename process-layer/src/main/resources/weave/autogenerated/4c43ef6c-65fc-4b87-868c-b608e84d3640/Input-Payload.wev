@@ -1,0 +1,30 @@
+%dw 2.0
+
+type auto_4c43ef6c_65fc_4b87_868c_b608e84d3640_Input_Payload = {|
+  data: Array<{|    sku: Number,     client_sku: String,     total_quantity: Number,     total_allocated_quantity: Number,     breakdown_by_country: Array<{|      country_code: String,       quantity: Number,       allocated_quantity: Number,       breakdown_by_city: Array<{|        city: String,         quantity: Number,         allocated_quantity: Number      |}>
+    |}>
+  |} | {|
+    sku: Number, 
+    client_sku: String, 
+    total_quantity: Null, 
+    total_allocated_quantity: Null, 
+    breakdown_by_country: Array<Nothing>
+  |}>, 
+  links: {|
+    previous: String, 
+    next: String, 
+    first: String, 
+    last: String
+  |}, 
+  meta: {|
+    path: String, 
+    per_page: Number, 
+    current_page: Number, 
+    from: Number, 
+    to: Number, 
+    last_page: Number, 
+    total: Number, 
+    links: Array<{|      url: String,       label: Number,       active: Boolean    |}>
+  |}
+|}
+

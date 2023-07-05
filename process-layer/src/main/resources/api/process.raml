@@ -1,0 +1,23 @@
+#%RAML 1.0
+title: process
+
+
+types:
+  order: !include Datatypes/orderManagement/createOrder.json
+
+/create_order:
+  post:
+    description: Create Orders
+    headers:
+      Autorization: string
+    body:
+      application/json:
+        type: order
+        examples:
+          input: !include Examples/OrderManagement/createOrder.json
+    responses:
+      201:
+        body:
+          application/json:
+            examples:
+              output: !include Response/OrderManagement/createOrder.json

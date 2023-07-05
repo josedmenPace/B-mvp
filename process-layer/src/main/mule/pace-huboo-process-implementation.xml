@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="add024e9-359e-49f3-8af7-86d7253df5e5" >
+		<http:request-connection connectionIdleTimeout="300000" />
+	</http:request-config>
+	<flow name="process-implementation_Flow" doc:id="a73f22e1-1fda-4dce-be4a-2eab6492d2c3" >
+		<ee:transform doc:name="Create vars: authorization and order" doc:id="45ab0834-eaa9-4dec-9bff-fa8314da7066">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="authorization" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.Authorization]]></ee:set-variable>
+				<ee:set-variable variableName="order" ><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {created_at: now()}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Add field created_at" doc:id="b05a4c82-bfbb-438e-b2ad-233b1c1a81d6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {created_at: now()}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="order" ><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {created_at: now()}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Map to huboo spec" doc:id="a33ac036-8fcf-4dc9-814f-b226cc418788" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	data: [{
+		client_order_id: payload.order_number,
+		lines: [{
+			sku: payload.order_item_reference_number,
+			quantity: payload.order_item_quantity,
+			sales_value: {
+				amount: payload.order_item_sale_value,
+				currency: payload.order_item_currency
+			}
+		}],
+		address: {
+			name: payload.contact.customer_name,
+			line_one: payload.shipping_details.shipping_address.street_number,
+			line_two: payload.shipping_details.shipping_address.street_name,
+			line_three: payload.shipping_details.shipping_address.street_type,
+			line_four: payload.shipping_details.shipping_address.area,
+			town: payload.shipping_details.shipping_address.town,
+			country_code: payload.shipping_details.shipping_address.country,
+			postcode: payload.shipping_details.shipping_address.postcode,
+			email_address: payload.contact.email,
+			phone_number: payload.contact.phone
+		},
+		note: payload.shipping_details.customer_note,
+		channel: "paceMVPtestChannel",
+		created_at: payload.created_at as String
+	}]
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sku" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.order_item_reference_number]]></ee:set-variable>
+				<ee:set-variable variableName="quantity" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.order_item_quantity]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="dfc382a0-03b2-4ff0-8d06-df6e8ed1c000" />
+		<http:request method="POST" doc:name="Retrieve Stock Valiodation" doc:id="85638eb7-19c4-4720-8782-67e8c4f4f396" config-ref="HTTP_Request_configuration" url="http://localhost:8081/api/order" sendCorrelationId="NEVER">
+			<http:body ><![CDATA[#[vars.order]]]></http:body>
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"quantity" : vars.quantity,
+	"sku" : vars.sku,
+	"authorization" : vars.authorization,
+	"accept" : "application/json"
+}]]]></http:headers>
+		</http:request>
+	</flow>
+</mule>

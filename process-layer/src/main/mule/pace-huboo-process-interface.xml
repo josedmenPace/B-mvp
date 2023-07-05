@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <http:listener-config name="process-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8082" readTimeout="3000000"/>
+    </http:listener-config>
+    <apikit:config name="process-config" api="resource::2b29941a-dfff-4301-9b84-e0731c42d790:process:1.0.5:raml:zip:process.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="process-main">
+        <http:listener config-ref="process-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="process-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="process-console">
+        <http:listener config-ref="process-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="process-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="post:\order:application\json:process-config">
+		<logger level="INFO" doc:name="Logger" doc:id="92070719-c325-4ca7-9599-bd2d9783dfb6" />
+		<ee:transform doc:name="Create vars: authorization and Stock" doc:id="dd12ebeb-a180-49a5-b110-d274f3eabcb5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="Stock" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.Stock]]></ee:set-variable>
+				<ee:set-variable variableName="authorization" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.Authorization]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="f9eb71d8-a2e9-4ab5-b2b3-63f93481b5ee" >
+			<when expression="#[vars.Stock == null]">
+				<flow-ref doc:name="Retrieve Stock Validation" doc:id="9c5037f4-2844-498f-ae35-34768609bf11" name="process-implementation_Flow" />
+			</when>
+			<otherwise >
+				<choice doc:name="Choice" doc:id="6f5761aa-0910-48e0-aca9-d0ae5d033ef6">
+			<when expression='#[vars.Stock == "Item is in stock"]'>
+				<ee:transform doc:name="Transform To Huboo Format" doc:id="52e3f7fe-a822-4158-8fd9-d112e824dce0">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	data: [{
+		client_order_id: payload.order_number,
+		lines: [{
+			sku: payload.order_item_reference_number,
+			quantity: payload.order_item_quantity,
+			sales_value: {
+				amount: payload.order_item_sale_value,
+				currency: payload.order_item_currency
+			}
+		}],
+		address: {
+			name: payload.contact.customer_name,
+			line_one: payload.shipping_details.shipping_address.street_number,
+			line_two: payload.shipping_details.shipping_address.street_name,
+			line_three: payload.shipping_details.shipping_address.street_type,
+			line_four: payload.shipping_details.shipping_address.area,
+			town: payload.shipping_details.shipping_address.town,
+			country_code: payload.shipping_details.shipping_address.country,
+			postcode: payload.shipping_details.shipping_address.postcode,
+			email_address: payload.contact.email,
+			phone_number: payload.contact.phone
+		},
+		note: payload.shipping_details.customer_note,
+		channel: "paceMVPtestChannel",
+		created_at: payload.created_at as String
+	}]
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<set-payload doc:name="Set Payload" doc:id="94184ac1-6ed8-4f99-81dd-35276d7a8bac" value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;    "data": {&#10;        "id": "6603-1688549999-64a53a6fa16d5",&#10;        "client_order_id": "GEORGE_134466",&#10;        "lines": [&#10;            {&#10;                "id": 1475768,&#10;                "sku": 810887,&#10;                "identifier": "72527293066",&#10;                "client_sku": "KEE-PAC-BLU-COT",&#10;                "quantity": 1,&#10;                "sales_value": {&#10;                    "amount": 22.99,&#10;                    "currency": "GBP"&#10;                },&#10;                "batch_requirements": {&#10;                    "min_expiry_date": null&#10;                },&#10;                "batch_details": []&#10;            }&#10;        ],&#10;        "address": {&#10;            "name": "GEORGE SMITH",&#10;            "line_one": "1 Mushroom Lane",&#10;            "line_two": "Middletown",&#10;            "line_three": "Uppercounty",&#10;            "line_four": "Lowerregion",&#10;            "town": "Bristol",&#10;            "country_code": "GB",&#10;            "postcode": "AB1 2CD",&#10;            "email_address": "example@domain.com",&#10;            "phone_number": "+44 7123456789"&#10;        },&#10;        "status": "Hold",&#10;        "shipping_service": "",&#10;        "tracking": [&#10;            {&#10;                "dispatched": false,&#10;                "dispatched_from_city": null,&#10;                "carrier_name": null,&#10;                "carrier_service": null,&#10;                "tracking_url": null,&#10;                "tracking_number": null,&#10;                "lines": [&#10;                    {&#10;                        "id": 1475768,&#10;                        "sku": 810887,&#10;                        "client_sku": "KEE-PAC-BLU-COT",&#10;                        "identifier": "72527293066"&#10;                    }&#10;                ]&#10;            }&#10;        ],&#10;        "note": "This is my very special order note.",&#10;        "channel": "amazon",&#10;        "order_options": {&#10;            "has_dispatch_note": false&#10;        },&#10;        "created_at": "2023-07-05T09:39:59Z"&#10;    }&#10;}]'/>
+						<logger level="INFO" doc:name="Logger" doc:id="c0ee8ba6-14a0-43a4-b23d-edbc88ab9a18" />
+						<http:request method="POST" doc:name="Create Order in Huboo" doc:id="978a9436-febf-4a41-a9bb-6ad24a484d6d" config-ref="HTTP_Request_configuration" url="https://api.sandbox.huboo.io/v2/order">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"authorization" : vars.authorization,
+	"accept" : "application/json"
+}]]]></http:headers>
+		</http:request>
+			</when>
+			<otherwise>
+				<set-payload value="Item is not in Stock." doc:name="Return Messafe Item not in Stock" doc:id="ecd985d5-9d76-46f4-950c-7a04c9c89ab3" />
+			</otherwise>
+		</choice>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="c7579016-484f-4a8c-9954-bc30b91e9c99" />
+    </flow>
+</mule>

@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_4c43ef6c_65fc_4b87_868c_b608e84d3640_Input_Variables_autorization = String
+

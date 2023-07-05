@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": "string"
+    },
+    "order_item_reference_number": {
+      "type": "integer"
+    },
+    "order_item_quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "order_item_sale_value": {
+      "type": "number"
+    },
+    "order_item_currency": {
+      "type": "string"
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "customer_name": {
+          "type": "string",
+          "minLength": 5
+        },
+        "email": {
+          "type": "string",
+          "minLength": 5
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 5
+        }
+      },
+      "required": [
+        "customer_name",
+        "email",
+        "phone"
+      ]
+    },
+    "shipping_details": {
+      "type": "object",
+      "properties": {
+        "shipping_address": {
+          "type": "object",
+          "properties": {
+            "street_number": {
+              "type": "string",
+              "minLength": 1
+            },
+            "street_name": {
+              "type": "string",
+              "minLength": 4
+            },
+            "street_type": {
+              "type": "string"
+            },
+            "area": {
+              "type": "string"
+            },
+            "town": {
+              "type": "string",
+              "minLength": 2
+            },
+            "country": {
+              "type": "string"
+            },
+            "postcode": {
+              "type": "string",
+              "minLength": 2
+            }
+          },
+          "required": [
+            "street_number",
+            "street_name",
+            "street_type",
+            "area",
+            "town",
+            "country",
+            "postcode"
+          ]
+        },
+        "customer_note": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "shipping_address",
+        "customer_note",
+        "channel"
+      ]
+    }
+  },
+  "required": [
+    "order_number",
+    "order_item_reference_number",
+    "order_item_quantity",
+    "order_item_sale_value",
+    "order_item_currency",
+    "contact",
+    "shipping_details"
+  ]
+}

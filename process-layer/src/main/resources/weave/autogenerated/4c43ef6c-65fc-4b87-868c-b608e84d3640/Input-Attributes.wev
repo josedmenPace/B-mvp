@@ -1,0 +1,30 @@
+%dw 2.0
+
+type auto_4c43ef6c_65fc_4b87_868c_b608e84d3640_Input_Attributes = {|
+  clientCertificate?: {|
+    publicKey?: {|  |}, 
+    "type"?: String, 
+    encoded?: Binary
+  |}, 
+  headers: {|
+    Accept: String, 
+    Authorization: String
+  |}, 
+  listenerPath: String, 
+  method: String, 
+  queryParams: {|
+    sku?: String, 
+    include_archived?: Boolean, 
+    client_bundle_skus?: String
+  |}, 
+  queryString: String, 
+  relativePath: String, 
+  remoteAddress: String, 
+  requestPath: String, 
+  requestUri: String, 
+  scheme: String, 
+  uriParams: {|  |}, 
+  version: String, 
+  localAddress: String
+|}
+

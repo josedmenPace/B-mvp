@@ -1,0 +1,26 @@
+{
+	 "order_number": "11111",
+	 "order_item_reference_number": 811329,
+	 "order_item_quantity": 1,
+	 "order_item_sale_value": 22.99,
+	 "order_item_currency": "GBP",
+	 "contact":{
+		 "customer_name":"George Smith",
+		 "email":"example@domain.com",
+		 "phone":"7123456789"
+	},
+	 "shipping_details":
+	{
+		 "shipping_address":{
+			 "street_number":"1",
+			 "street_name" :"Mushroom",
+			 "street_type":"Lane",
+			 "area":"Uppercounty",
+			 "town":"Bristol",
+			 "country":"United Kingdom",
+			 "postcode":"AB1 2CD"			 
+		 },
+		  "customer_note" : "This is my very special order note.",
+		  "channel": null
+	}
+}

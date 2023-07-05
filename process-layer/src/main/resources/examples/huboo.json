@@ -1,0 +1,59 @@
+{
+    "data": [
+        {
+            "id": "6672-1670951798-6398b3765f85a",
+            "client_order_id": "GEORGE_123456",
+            "lines": [
+                {
+                    "id": 1443684,
+                    "sku": 811329,
+                    "identifier": "223344",
+                    "quantity": 1,
+                    "sales_value": {
+                        "amount": 22.99,
+                        "currency": "GBP"
+                    },
+                    "batch_details": []
+                }
+            ],
+            "address": {
+                "name": "GEORGE SMITH",
+                "line_one": "1 Mushroom Lane",
+                "line_two": "Middletown",
+                "line_three": "Uppercounty",
+                "line_four": "Lowerregion",
+                "town": "Bristol",
+                "country_code": "GB",
+                "postcode": "AB1 2CD",
+                "email_address": "example@domain.com",
+                "phone_number": "+44 7123456789"
+            },
+            "status": "In Progress",
+            "shipping_service": "",
+            "tracking": [
+                {
+                    "dispatched": false,
+                    "dispatched_from_city": null,
+                    "carrier_name": null,
+                    "carrier_service": null,
+                    "tracking_url": null,
+                    "tracking_number": null,
+                    "lines": [
+                        {
+                            "id": 1443684,
+                            "sku": 811329,
+                            "client_sku": "234",
+                            "identifier": "223344"
+                        }
+                    ]
+                }
+            ],
+            "note": "This is my very special order note.",
+            "channel": "amazon",
+            "order_options": {
+                "has_dispatch_note": false
+            },
+            "created_at": "2022-12-13T17:16:38Z"
+        }
+    ]
+}
